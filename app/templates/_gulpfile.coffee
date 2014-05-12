@@ -1,147 +1,126 @@
 'use strict'
-// generated on <%= (new Date).toISOString().split('T')[0] %> using <%= pkg.name %> <%= pkg.version %>
+# generated on <%= (new Date).toISOString().split('T')[0] %> using <%= pkg.name %> <%= pkg.version %>
 
 gulp = require 'gulp'
-gutil = require 'gulp-util'
-coffee = require 'gulp-coffee'
-watch = require 'gulp-watch'
-concat = require 'gulp-concat'
-imagemin = require 'gulp-imagemin'
-clean = require 'gulp-clean'
-flatten = require 'gulp-flatten'
-minifycss = require 'gulp-minify-css'
-size = require 'gulp-size'
-
-// load plugins
+# load plugins
 $ = require('gulp-load-plugins')()
+spawn = require('child_process').spawn
+node = null
 
-gulp.task('styles', ->
-  return gulp.src('app/styles/main.scss')
-    .pipe($.rubySass({
-      style: 'expanded'
-      precision: 10
-    }))
-    .pipe($.autoprefixer('last 1 version'))
-    .pipe(gulp.dest('.tmp/styles'))
+# Compile jobs
+path =
+  server: 'server/**/*.coffee'
+  test: 'test/**/*.coffee'
+  <% if (includeClient) { %>
+  scripts: 'app/scripts/**/*.coffee'
+  styles: 'app/styles/**/*.css'
+  bower: 'app/components'
+  html: 'app/html/**/*.html'
+  assets: 'app/assets/*'
+  <% } %>
+
+<% if (includeClient) { %>
+gulp.task 'scripts', () ->
+  gulp.src(path.scripts)
+    .pipe($.coffee({bare: true}).on 'error', $.util.log)
+    .pipe($.concat 'app.min.js')
     .pipe($.size())
+    .pipe(gulp.dest '_public/js')
+
+gulp.task 'uglyscripts', () ->
+  gulp.src(path.scripts)
+    .pipe($.coffee({bare: true}).on 'error', $.util.log)
+    .pipe($.concat 'app.min.js')
+    .pipe($.size())
+    .pipe(gulp.dest '_public/js')
+
+gulp.task 'styles', () ->
+  gulp.src(path.styles)
+    .pipe($.concat 'app.min.css')
+    .pipe($.size())
+    .pipe(gulp.dest '_public/css')
+
+gulp.task 'jquery', () ->
+  gulp.src('app/components/jquery/jquery.min.js')
+    .pipe($.size())
+    .pipe(gulp.dest('_public/js'))
+
+gulp.task 'bowerjs', () ->
+  gulp.src('app/components/**/*.min.js', !'app/components/jquery/jquery.min.js')
+    .pipe($.flatten())
+    .pipe($.concat 'vendor.min.js')
+    .pipe($.size())
+    .pipe(gulp.dest('_public/js'))
+
+gulp.task 'bowercss', () ->
+  gulp.src('app/components/**/*.min.css')
+    .pipe($.flatten())
+    .pipe($.concat 'vendor.min.css')
+    .pipe($.size())
+    .pipe(gulp.dest('_public/css'))
+
+gulp.task 'html', () ->
+  gulp.src(path.html)
+    .pipe($.size())
+    .pipe(gulp.dest '_public')
+
+gulp.task 'assets', () ->
+  gulp.src(path.assets)
+    .pipe($.imagemin({optimizationLevel: 5}))
+    .pipe($.size())
+    .pipe(gulp.dest '_public/assets')
+
+gulp.task 'ngroute', () ->
+  gulp.src('app/components/angular-route/angular-route.min.js')
+  .pipe($.flatten())
+  .pipe($.concat 'ngroute.min.js')
+  .pipe($.size())
+  .pipe(gulp.dest('_public/js'))
+
+gulp.task 'clean', () ->
+  gulp.src('_public', { read: false })
+    .pipe(clean())
+
+gulp.task 'compile', ['scripts', 'styles', 'bowerjs', 'html', 'assets']
+
+gulp.task 'watch', () ->
+  gulp.watch path.scripts, ['scripts']
+  gulp.watch path.styles, ['styles']
+  gulp.watch path.bower, ['bowerjs']
+  gulp.watch path.html, ['html']
+  gulp.watch path.assets, ['assets']
+<% } %>
+
+# Main jobs
+gulp.task('test', ->
+  gulp.src(['server/**', 'test/**'], { read: false })
+    .pipe($.watch({ emit: 'all' }, (files) ->
+      files
+        .pipe($.grepStream('*/test/*.coffe'))
+        .pipe($.mocha({ reporter: 'spec' }))
+        .on('error', -> console.log(err.stack) if (!/tests? failed/.test(err.stack)))
+    ))
 )
 
+start = ->
+  if node? then node.kill()
+  node = spawn('coffee', ['server/app.coffee'], {stdio: 'inherit'})
+  node.on('close', ->
+    console.log arguments
+  )
 
-// gulp.task('scripts', function () {
-//     return gulp.src('app/scripts/**/*.js')
-//         .pipe($.jshint())
-//         .pipe($.jshint.reporter(require('jshint-stylish')))
-//         .pipe($.size());
-// });
+gulp.task('start', ->
+  start()
+  gulp.watch(path.server, start)
+)
 
-// gulp.task('html', ['styles', 'scripts'], function () {
-//     var jsFilter = $.filter('**/*.js');
-//     var cssFilter = $.filter('**/*.css');
+<% if (includeClient) { %>
+gulp.task('default', ['watch', 'start'])
+<% } else { %>
+gulp.task('default', ['start'])
+<% } %>
 
-//     return gulp.src('app/*.html')
-//         .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
-//         .pipe(jsFilter)
-//         .pipe(jsFilter.restore())
-//         .pipe(cssFilter)
-//         .pipe($.csso())
-//         .pipe(cssFilter.restore())
-//         .pipe($.useref.restore())
-//         .pipe($.useref())
-//         .pipe(gulp.dest('dist'))
-//         .pipe($.size());
-// });
+process.on('exit', ->
+  if node? then node.kill()
+)
 
-// gulp.task('images', function () {
-//     return gulp.src('app/images/**/*')
-//         .pipe($.cache($.imagemin({
-//             optimizationLevel: 3,
-//             progressive: true,
-//             interlaced: true
-//         })))
-//         .pipe(gulp.dest('dist/images'))
-//         .pipe($.size());
-// });
-
-// gulp.task('fonts', function () {
-//     var streamqueue = require('streamqueue');
-//     return streamqueue({objectMode: true},
-//         $.bowerFiles(),
-//         gulp.src('app/fonts/**/*')
-//     )
-//         .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
-//         .pipe($.flatten())
-//         .pipe(gulp.dest('dist/fonts'))
-//         .pipe($.size());
-// });
-
-// gulp.task('extras', function () {
-//     return gulp.src(['app/*.*', '!app/*.html'], { dot: true })
-//         .pipe(gulp.dest('dist'));
-// });
-
-// gulp.task('clean', function () {
-//     return gulp.src(['.tmp', 'dist'], { read: false }).pipe($.clean());
-// });
-
-// gulp.task('build', ['html', 'images', 'fonts', 'extras']);
-
-// gulp.task('default', ['clean'], function () {
-//     gulp.start('build');
-// });
-
-// gulp.task('connect', function () {
-//     var connect = require('connect');
-//     var app = connect()
-//         .use(require('connect-livereload')({ port: 35729 }))
-//         .use(connect.static('app'))
-//         .use(connect.static('.tmp'))
-//         .use(connect.directory('app'));
-
-//     require('http').createServer(app)
-//         .listen(9000)
-//         .on('listening', function () {
-//             console.log('Started connect web server on http://localhost:9000');
-//         });
-// });
-
-// gulp.task('serve', ['connect'<% if (includeSass) { %>, 'styles'<% } %>], function () {
-//     require('opn')('http://localhost:9000');
-// });
-
-// // inject bower components
-// gulp.task('wiredep', function () {
-//     var wiredep = require('wiredep').stream;
-// <% if (includeSass) { %>
-//     gulp.src('app/styles/*.scss')
-//         .pipe(wiredep({
-//             directory: 'app/bower_components'
-//         }))
-//         .pipe(gulp.dest('app/styles'));
-// <% } %>
-//     gulp.src('app/*.html')
-//         .pipe(wiredep({
-//             directory: 'app/bower_components'<% if (includeSass && includeBootstrap) { %>,
-//             exclude: ['bootstrap-sass-official']<% } %>
-//         }))
-//         .pipe(gulp.dest('app'));
-// });
-
-// gulp.task('watch', ['connect', 'serve'], function () {
-//     var server = $.livereload();
-
-//     // watch for changes
-
-//     gulp.watch([
-//         'app/*.html',
-//         '.tmp/styles/**/*.css',
-//         'app/scripts/**/*.js',
-//         'app/images/**/*'
-//     ]).on('change', function (file) {
-//         server.changed(file.path);
-//     });
-
-//     gulp.watch('app/styles/**/*.<%= includeSass ? 'scss' : 'css' %>', ['styles']);
-//     gulp.watch('app/scripts/**/*.js', ['scripts']);
-//     gulp.watch('app/images/**/*', ['images']);
-//     gulp.watch('bower.json', ['wiredep']);
-// });
