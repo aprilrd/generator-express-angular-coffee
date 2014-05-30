@@ -1,4 +1,4 @@
-# generator-express-angular-coffee [![Build Status](https://secure.travis-ci.org/aprilrd/generator-express-angular-coffee.png?branch=master)](https://travis-ci.org/aprilrd/generator-express-angular-coffee)
+# generator-express-angular-coffee 
 
 > [Yeoman](http://yeoman.io) generator
 
@@ -35,11 +35,39 @@ Finally, initiate the generator:
 $ yo express-angular-coffee
 ```
 
+#### Directory Structure
+
+Once you create a project from generator-express-angular-coffee, you will see the following directory structure.
+* app #where your rich clientside app lives  
+  * assets
+  * html
+    * views
+    * index.html
+  * scripts
+    * controllers
+    * services
+    * app.coffee
+    * config.coffee
+  * styles
+    * views 
+* karma-test
+* server #where your server side api lives
+  * config
+    * env
+    * system
+  * controllers
+  * models
+  * routes
+    * middlewares
+  * views
+  * app.coffee
+* test
+
 ### Getting To Know Yeoman
 
 Yeoman has a heart of gold. He's a person with feelings and opinions, but he's very easy to work with. If you think he's too opinionated, he can be easily convinced.
 
-If you'd like to get to know Yeoman better and meet some of his friends, [Grunt](http://gruntjs.com) and [Bower](http://bower.io), check out the complete [Getting Started Guide](https://github.com/yeoman/yeoman/wiki/Getting-Started).
+If you'd like to get to know Yeoman better and meet some of his friends, [Gulp](https://github.com/gulpjs/gulp) and [Bower](http://bower.io), check out the complete [Getting Started Guide](https://github.com/yeoman/yeoman/wiki/Getting-Started).
 
 
 ## License
