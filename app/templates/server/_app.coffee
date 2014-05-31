@@ -1,10 +1,12 @@
 express = require 'express'
-configAll = require './config/env/all'
+config = require './config/config'
+routes = require './config/routes'
 
 app = express()
-app.listen(configAll.port)
 
 <% if (includeClient) { %>
 app.use(express.static(__dirname + '/../_public'))
 <% } %>
 
+routes(app)
+app.listen(config.port)
