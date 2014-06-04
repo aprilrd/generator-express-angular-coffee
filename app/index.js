@@ -69,8 +69,7 @@ var ExpressAngularCoffeeGenerator = yeoman.generators.Base.extend({
     this.mkdir('server/config/system');
     this.mkdir('server/controllers');
     this.mkdir('server/models');
-    this.mkdir('server/routes');
-    this.mkdir('server/routes/middlewares');
+    this.mkdir('server/middlewares');
     this.mkdir('server/views');
 
     this.mkdir('test');
