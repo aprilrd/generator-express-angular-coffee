@@ -96,7 +96,7 @@ gulp.task('test', ->
   gulp.src(['server/**', 'test/**'], { read: false })
     .pipe($.watch({ emit: 'all' }, (files) ->
       files
-        .pipe($.grepStream('*/test/*.coffe'))
+        .pipe($.grepStream('**/*.mocha.coffee'))
         .pipe($.mocha({ reporter: 'spec' }))
         .on('error', -> console.log(err.stack) if (!/tests? failed/.test(err.stack)))
     ))
