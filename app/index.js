@@ -56,7 +56,23 @@ var ExpressAngularCoffeeGenerator = yeoman.generators.Base.extend({
       }
       this.includeClient = props.includeClient;
 
-      done();
+      var projectNameRegexp = new RegExp(this.projectName + '$');
+      if (projectNameRegexp.test(process.cwd())) {
+        done();
+      } else {
+        this.prompt([{
+          type: 'confirm',
+          name: 'differentDirName',
+          message: 'Your project name is ' + this.projectName + '. But your directory is at ' + process.cwd() + '. Are you sure about using this directory?',
+          default: false
+        }], function (props) {
+          if (props.differentDirName) {
+            done();
+          } else {
+            done(new Error('Use new directory name'));
+          }
+        })
+      }
     }.bind(this));
   },
 
