@@ -3,17 +3,17 @@
   "version": "0.0.0",
   "dependencies": {
     "body-parser": "1.0.x",
-    "coffee-script": "1.7.x",
+    "coffee-script": "1.8.x",
     "compression": "1.0.x",
     "cookie-parser": "1.0.x",
-    "express": "4.0.x",
+    "express": "4.10.x",
     "express-session": "1.0.x",
-    "winston": "0.7.x"
+    "winston": "0.8.x"
   },
   "devDependencies": {
-    "chai": "1.9.x",
+    "chai": "1.10.x",
     "supertest": "0.11.x",
-    "mocha": "1.18.x",
+    "mocha": "2.0.x",
     "gulp": "3.6.x",
     "gulp-coffee": "1.4.x",
     "gulp-size": "0.3.x",

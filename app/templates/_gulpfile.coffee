@@ -93,12 +93,18 @@ gulp.task 'watch', () ->
 
 # Main jobs
 gulp.task('test', ->
-  gulp.src(['server/**', 'test/**'], { read: false })
+<% if (includeClient) { %>
+  gulp.src([path.server, path.scripts, path.test], { read: false })
+<% } else { %>
+  gulp.src([path.server, path.test], { read: false })
+<% } %>
     .pipe($.watch({ emit: 'all' }, (files) ->
       files
         .pipe($.grepStream('**/*.mocha.coffee'))
         .pipe($.mocha({ reporter: 'spec' }))
-        .on('error', -> console.log(err.stack) if (!/tests? failed/.test(err.stack)))
+        .on('error', (err) ->
+          this.emit('end')
+        )
     ))
 )
 
